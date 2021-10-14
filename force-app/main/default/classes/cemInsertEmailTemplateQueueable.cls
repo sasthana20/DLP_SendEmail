@@ -12,9 +12,9 @@ public without sharing class cemInsertEmailTemplateQueueable implements Queueabl
     public List<string> toAddress;
     public List<string> ccIds;
     public List<string> ccAddress;
-    public List<id> attachmentID;
+    public Id attachmentID;
     
-    public cemInsertEmailTemplateQueueable(string userId, string relatedTo, string fromAddress, string fromName, string subject, string emailBody, list<string> toIds, list<string> toAddress, list<string> ccIds, list<string> ccAddress, string classification, string deliveryOption, List<id> attachmentID){
+    public cemInsertEmailTemplateQueueable(string userId, string relatedTo, string fromAddress, string fromName, string subject, string emailBody, list<string> toIds, list<string> toAddress, list<string> ccIds, list<string> ccAddress, string classification, string deliveryOption, Id attachmentID){
         system.debug('attachmentID'+attachmentID);
         this.userId=userId;
         this.relatedTo=relatedTo;
@@ -37,13 +37,12 @@ public without sharing class cemInsertEmailTemplateQueueable implements Queueabl
         String folName = folderName[0].Name;
         String Type = folderName[0].Type;
         system.debug('userId'+userId);
-        
         EmailTemplate toInsertEmailTemplate = new EmailTemplate();
-        List<EmailTemplate> emailTemplateList = [Select  Id, FolderId, HtmlValue, FolderName, isActive, body,Name,subject from EmailTemplate where DeveloperName=:'a'+userId];
+        List<EmailTemplate> emailTemplateList = [Select id from EmailTemplate where DeveloperName=:'a'+userId];
         if(emailTemplateList.size()>0){
             toInsertEmailTemplate=emailTemplateList[0];
             toInsertEmailTemplate.Body = emailBody;
-            toInsertEmailTemplate.Subject = subject;                      
+            toInsertEmailTemplate.Subject = subject;
             update toInsertEmailTemplate;
         }
         else{
@@ -53,7 +52,7 @@ public without sharing class cemInsertEmailTemplateQueueable implements Queueabl
             toInsertEmailTemplate.Subject = subject;
             toInsertEmailTemplate.DeveloperName = 'a'+userId;
             toInsertEmailTemplate.FolderId=folderId;
-            toInsertEmailTemplate.TemplateType = 'html';
+            toInsertEmailTemplate.TemplateType = 'text';
             toInsertEmailTemplate.IsActive = true;
             system.debug('toInsertEmailTemplate'+toInsertEmailTemplate.Subject);
             insert toInsertEmailTemplate;
