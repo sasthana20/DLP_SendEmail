@@ -53,11 +53,6 @@
         <name>CustomLabels</name>
     </types>
     <types>
-        <members>unfiled$public/MarketingProductInquiryResponse</members>
-        <members>unfiled$public/SalesNewCustomerEmail</members>
-        <name>EmailTemplate</name>
-    </types>
-    <types>
         <members>DLP_Restricted_List.CRSO_SECURE_EXTERNAL_NO_LABEL</members>
         <members>DLP_Restricted_List.CONTROLLED_DEPT</members>
         <members>DLP_Restricted_List.PUBLIC_OFFICIAL_RELEASE</members>
