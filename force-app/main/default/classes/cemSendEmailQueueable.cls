@@ -12,9 +12,9 @@ public without sharing class cemSendEmailQueueable implements Queueable{
         public List<string> toAddress;
         public List<string> ccIds;
         public List<string> ccAddress;
-    	public List<id> attachmentID;
+    	public Id attachmentID;
     
-    public cemSendEmailQueueable(string userId, string relatedTo, string fromAddress, string fromName, string subject, string emailBody, list<string> toIds, list<string> toAddress, list<string> ccIds, list<string> ccAddress, string classification, string deliveryOption, Id insertedTemplateID,List<ID> attachmentID){
+    public cemSendEmailQueueable(string userId, string relatedTo, string fromAddress, string fromName, string subject, string emailBody, list<string> toIds, list<string> toAddress, list<string> ccIds, list<string> ccAddress, string classification, string deliveryOption, Id insertedTemplateID,Id attachmentID){
         system.debug('attachmentID'+attachmentID);
         this.userId=userId;
         this.relatedTo=relatedTo;
@@ -34,24 +34,20 @@ public without sharing class cemSendEmailQueueable implements Queueable{
     
     public void execute(QueueableContext context) {
         try {  
-            system.debug('attach Debugs attachmentID'+attachmentID);
-            List<Messaging.Emailfileattachment> efaList = new List<Messaging.Emailfileattachment>();
-            if(attachmentID != NULL){   
-                Map<String,Blob> blobMap = new Map<String,Blob>();
-                List<Blob> blobList = new List<Blob>();
-                for(contentversion cvList : ([SELECT title,PathOnClient, FileType,versiondata 
-                                             FROM contentversion 
-                                             WHERE ContentDocumentId = :attachmentID])){
-                                                 system.debug('attach Debugs cvList'+cvList);
-                                                 Messaging.Emailfileattachment singleEFA = new Messaging.Emailfileattachment();
-                                                 Blob data = cvList.VersionData;
-                                                 singleEFA.setBody(Data);
-                                                 singleEFA.setFileName(cvList.Title);
-                                                 efaList.add(singleEFA);
-                                             }
-                
-                              
-                system.debug('attach Debugs efaList'+efaList);
+            // system.debug('attachmentID'+attachmentID);
+            Messaging.Emailfileattachment efa = new Messaging.Emailfileattachment();
+            if(attachmentID != NULL){
+                ContentVersion cv = [SELECT title,PathOnClient, FileType,versiondata 
+                                     FROM contentversion 
+                                     WHERE ContentDocumentId = :attachmentID];
+                Blob Data = cv.VersionData;
+                if(Data.size()>0)
+                {
+                    efa.setBody(Data);
+                    efa.setFileName(Cv.Title);
+                }
+                system.debug('Data at Line#46'+Data);
+                system.debug('efa'+efa);
                 
             }
             
@@ -117,7 +113,7 @@ public without sharing class cemSendEmailQueueable implements Queueable{
             email.setTemplateid(insertedTemplateID);
             email.settargetObjectId(relatedTo);
             if(attachmentID != NULL)
-                email.setFileAttachments(efaList);
+            email.setFileAttachments(new Messaging.EmailFileAttachment[] {efa});
             //email.setSubject(emailTemplate[0].Subject);
             //email.setHtmlBody(templateBody);
             system.debug('email at 312'+email);
