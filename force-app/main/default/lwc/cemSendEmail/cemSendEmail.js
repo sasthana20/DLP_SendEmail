@@ -22,28 +22,11 @@ import GetEmailTemplates from '@salesforce/apex/cemSendEmailController.getEmailT
 import GetRelatedAccounts from '@salesforce/apex/cemSendEmailController.getRelatedAccounts';
 import deleteAttachment from '@salesforce/apex/cemSendEmailController.deleteAttachment';
 
-import fetchContactField from '@salesforce/apex/cemSendEmailController.fetchFieldsWrapper';
-
 import USER_ID from '@salesforce/user/Id';
 import IsDeleted from '@salesforce/schema/Account.IsDeleted';
 import NamespacePrefix from '@salesforce/schema/RecordType.NamespacePrefix';
 
 export default class CemSendEmail extends LightningElement {
-    formats = ['font', 'size', 'bold', 'italic', 'underline',
-    'strike', 'list', 'indent', 'align', 'link',
-    'image', 'clean', 'table', 'header', 'color'];
-    @track lstContactFields = [];  
-    @track error; 
-    @track value;
-    @track isModel = false;  
-    @track selectedField;
-    @track insertMergeField;    
-    organizationWrapper = {};
-    contactWrapper = {};
-    recipientWrapper = {};
-    senderWrapper = {};
-    senderBrandnWrapper = {};
-        
     @api recordId;
     @api objectAPIName;
     @api responseType;
@@ -186,7 +169,7 @@ console.log('***** get Email record: ' + JSON.stringify(data));
 //***** get Email record: {"htmlBody":"<div dir=\"ltr\"><div dir=\"ltr\">Response from gmail to Salesforce email service<br></div><br><div class=\"gmail_quote\"><blockquote class=\"gmail_quote\" style=\"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex\"><div dir=\"ltr\"><div class=\"gmail_quote\"><blockquote class=\"gmail_quote\" style=\"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex\"><div class=\"gmail_quote\"><div dir=\"ltr\" class=\"gmail_attr\">On Wed, May 19, 2021 at 1:21 AM User User &lt;<a href=\"mailto:basavaiahr21@gmail.com\" target=\"_blank\">basavaiahr21@gmail.com</a>&gt; wrote:<br></div><blockquote class=\"gmail_quote\" style=\"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex\">NONCONFIDENTIAL // EXTERNAL\n\n<p>Outbound from Custom Component</p></blockquote></div>\n</blockquote></div></div>\n</blockquote></div></div>","subject":"Re: 0BZo0000000KyjG Sandbox: Outbound from Custom Component"}
             this.subject = data.subject;
 //              	cleanText = str.replace(/<\/?[^>]+(>|$)/g, "");
-           // this.emailBody = '<br /><br /><br />' + data.htmlBody;
+            this.emailBody = '<br /><br /><br />' + data.htmlBody;
         }
     }
 
@@ -477,7 +460,7 @@ console.log(JSON.stringify(this.ccIds) + ' === ' + JSON.stringify(this.ccAddress
         console.log('Selected Email Subject',Subject);
         let Body = event.currentTarget.dataset.body;
         this.emailBody=Body;
-        console.log('Selected Email Body',this.emailBody);
+        console.log('Selected Email Body',Body);
         this.showInsertTemplateComp = false;
 
     }
@@ -522,7 +505,7 @@ console.log('***** Classification: ' + this.cvalue);
 console.log('***** Delivery Option: ' + this.dvalue);
 console.log('***** Body: ' + this.emailBody);
 */
-console.log('*****@@ Body: ' + this.emailBody);
+
         //sendEmail(string userId,      string relatedTo,           string fromAddress,         string fromName,        string subject,         string emailBody,       list<string> toIds, list<string> toAddress,         string classification,      string deliveryOption) {
         console.log('this.attachedFileID before sendEmail',this.attachedFileID);
         sendEmail({userId: this.userId, relatedTo: this.recordId, fromAddress: this.userEmail, fromName: this.userName, subject: this.subject, emailBody: this.emailBody, toIds: this.toIds, toAddress: this.toAddresses, ccIds: this.ccIds, ccAddress: this.ccAddresses, classification: this.cvalue, deliveryOption: this.dvalue, attachmentID:this.attachedFileID})
@@ -592,91 +575,4 @@ console.log('***** error: ' + JSON.stringify(error.body.message));
             this.dispatchEvent(toastEvent);
         }
     }
-
-
-/* -------------------------- Start : merge method ------------------------------ */
-
-    // renderedCallback() {
-    //     if(this.template.querySelector("lightning-input-rich-text")){
-    //         this.template.querySelector("lightning-input-rich-text").addEventListener('keypress', (e) => {
-    //             console.log('Caret at: ', e.target.value);
-    //             this.emailBody = e.target.value;
-    //         });
-    //   }
-    // }
-
-    //below code will be used as a function
-    @wire(fetchContactField) wiredAccounts ({ error, data }) {
-           if (data) { 
-               var conts = JSON.parse(JSON.stringify(data));  
-               for(let eachItem in conts){                                                               
-                   if(conts[eachItem].objectName == 'Organization'){
-                        this.organizationWrapper = conts[eachItem];
-
-                   }
-                   else if(conts[eachItem].objectName == 'Contact'){
-                        this.contactWrapper = conts[eachItem];
-                        
-                   }   
-                   else if(conts[eachItem].objectName == 'User'){
-                    this.senderWrapper = conts[eachItem];
-                    
-               }     
-                   console.log('field'+JSON.stringify(conts[eachItem].fieldLabels));                 
-                }
-              
-               // for(var key in conts){
-                //     optionsValues.push({label:conts[key], value:key}); //Here we are creating the array to show on UI.
-                // }
-            //this.lstContactFields = optionsValues;
-          } else if (error) { 
-              this.error = error;  
-         }   
-        }
-     
-        handleOpenModel(){
-            this.isModel = true;
-        }
-
-        handleCloseModel(){
-            this.isModel = false; 
-            //var removeHTMLTag =  this.emailBody.replace( /(<([^>]+)>)/ig,'');
-           // if(!this.emailBody){
-               console.log('@@@@@ EmailBody'+this.emailBody);
-                const editor = this.template.querySelector('lightning-input-rich-text');
-                editor.setRangeText(this.insertMergeField);                
-         //   } else {
-        //        this.emailBody += this.insertMergeField;
-         //   }
-          
-        }
-
-        handleSelectedValue(event){            
-            this.insertMergeField = event.detail;
-        }
-
-        handlePopupWindow(){
-            var divblock = this.template.querySelector('[data-id="Modalbox1"]');
-            console.log('divblock'+divblock);
-            if(divblock){                
-                this.template.querySelector('[data-id="Modalbox1"]').className='slds-modal slds-fade-in-open';
-                this.template.querySelector('[data-id="ModalDiv1"]').className='slds-modal__container';
-                this.template.querySelector('[data-id="ModalDiv2"]').className="slds-modal__content slds-p-around_medium";                
-                this.template.querySelector('[data-id="Modalbox_back1"]').className= "slds-backdrop slds-backdrop_open";
-                this.template.querySelector('[data-id="closeButton1"]').className= "slds-show";
-            }        
-        }
-
-        handleClosePopupWindow(){
-            var divblock = this.template.querySelector('[data-id="Modalbox1"]');
-            console.log('divblock'+divblock);
-            if(divblock){                
-                this.template.querySelector('[data-id="Modalbox1"]').className='';
-                this.template.querySelector('[data-id="ModalDiv1"]').className='';
-                this.template.querySelector('[data-id="ModalDiv2"]').className="";                
-                this.template.querySelector('[data-id="Modalbox_back1"]').className= "";
-                this.template.querySelector('[data-id="closeButton1"]').className= "slds-hide";
-            }    
-        }
-/* -------------------------- Close : merge method ------------------------------ */
 }
