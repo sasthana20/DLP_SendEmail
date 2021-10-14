@@ -9,7 +9,7 @@ public with sharing class cemSendEmailController {
     public static list<PicklistOptions> getClassification(){
         list<PicklistOptions> options = new list<PicklistOptions>();
 
-        try { 
+        try {
             Schema.DescribeFieldResult F = EmailMessage.Classification__c.getDescribe();
             Schema.sObjectField T = F.getSObjectField();
             List<PicklistEntry> entries = T.getDescribe().getPicklistValues();
@@ -245,29 +245,14 @@ system.debug('***** search Term: ' + searchTerm + ' ==== selectedIds: ' + select
 */
 
     @AuraEnabled
-    public static void sendEmail(string userId, string relatedTo, string fromAddress, string fromName, string subject, string emailBody, list<string> toIds, list<string> toAddress, list<string> ccIds, list<string> ccAddress, string classification, string deliveryOption,List<Id> attachmentID) {
+    public static void sendEmail(string userId, string relatedTo, string fromAddress, string fromName, string subject, string emailBody, list<string> toIds, list<string> toAddress, list<string> ccIds, list<string> ccAddress, string classification, string deliveryOption,Id attachmentID) {
         system.debug('attachmentID'+attachmentID);
-        system.debug('@@EmailBody'+emailBody);
         emailBody = classification + '\n' + emailBody ;
         emailBody = deliveryOption + '\n' + emailBody;
         emailBody.replace('<p>', '');
         emailBody.replace('</p>', '');
-        List<Id> lstAttachment = new List<Id>();
-        //lstAttachment.add(attachmentID);
-
-
-        // Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
-        // email.setToAddresses(new List<String>{'abhijeet.salesforce1@gmail.com'});                 
-        // email.settargetObjectId('0035f0000042novAAA');
-        // email.setSubject('Testing');
-        // email.setHtmlBody(emailBody);      
-        // String emailhtmlBody=email.getSubject();
-        // system.debug('emailSubject'+emailhtmlBody);
-
-        // Messaging.SingleEmailMessage[] messages = new List<Messaging.SingleEmailMessage> {email};
-        // Messaging.SendEmailResult[] results = Messaging.sendEmail(messages);
-
-           System.enqueueJob(new cemInsertEmailTemplateQueueable(userId, relatedTo, fromAddress, fromName, subject, emailBody, toIds, toAddress,  ccIds,  ccAddress,  classification,  deliveryOption,attachmentID));
+        
+            System.enqueueJob(new cemInsertEmailTemplateQueueable(userId, relatedTo, fromAddress, fromName, subject, emailBody, toIds, toAddress,  ccIds,  ccAddress,  classification,  deliveryOption,attachmentID));
         
         /*try {
             
@@ -442,85 +427,4 @@ system.debug('***** search Term: ' + searchTerm + ' ==== selectedIds: ' + select
             }
         return finalresult;
     }
-
-/* -------------------------- Start : merge method ------------------------------ */
-    @AuraEnabled(cacheable=true)
-    public static map<string,string> fetchContactField(){
-        SObjectType accountType = Schema.getGlobalDescribe().get('Contact');
-        Map<String,Schema.SObjectField> mfields = accountType.getDescribe().fields.getMap();
-        Map<String,String> reqFields = new   Map<String,String>();
-
-        for(String fieldName : mfields.keySet()) {         
-            if(mfields.get(fieldName).getDescribe().isUpdateable()){
-                reqFields.put(fieldName, mfields.get(fieldName).getDescribe().getLabel());
-            }
-            
-            system.debug('fieldName'+fieldName);
-        }
-        return reqFields;
-    }
-
-    @AuraEnabled(cacheable=true)
-    public static list<ObjectFieldList> fetchFieldsWrapper(){
-        list<ObjectFieldList> returnData = new list<ObjectFieldList>();
-
-        SObjectType org = Schema.getGlobalDescribe().get('Organization');
-        Map<String,Schema.SObjectField> mfields = org.getDescribe().fields.getMap();
-        Map<String,String> reqFields = new   Map<String,String>();
-
-        list<FieldLabels> fieldsList = new list<FieldLabels>();
-        for(String fieldName : mfields.keySet()) {         
-            if(mfields.get(fieldName).getDescribe().isUpdateable()){
-                // reqFields.put(fieldName, mfields.get(fieldName).getDescribe().getLabel());
-                fieldsList.add(new FieldLabels(fieldName, mfields.get(fieldName).getDescribe().getLabel()));
-            }
-          
-        }
-        returnData.add(new ObjectFieldList('Organization', 'Organization', fieldsList));
-      
-
-        SObjectType accountType = Schema.getGlobalDescribe().get('Contact');
-        mfields = accountType.getDescribe().fields.getMap();
-        reqFields = new   Map<String,String>();       
-        fieldsList = new list<FieldLabels>();
-        for(String fieldName : mfields.keySet()) {         
-            if(mfields.get(fieldName).getDescribe().isUpdateable()){
-                // reqFields.put(fieldName, mfields.get(fieldName).getDescribe().getLabel());
-               
-                FieldLabels fl = new FieldLabels(fieldName, mfields.get(fieldName).getDescribe().getLabel());   
-                system.debug('In'+fl);            
-                fieldsList.add(fl);
-            }           
-        }
-        system.debug('fieldsList'+fieldsList);
-        returnData.add(new ObjectFieldList('Contact', 'Contact', fieldsList));
-        system.debug('returnData2'+returnData);
-        return returnData;
-    }
-
-    public class ObjectFieldList{
-        @AuraEnabled
-        public String objectName{get;set;}
-        @AuraEnabled
-        public String objectAPIName{get;set;}
-        @AuraEnabled
-        public list<FieldLabels> fieldLabels{get;set;}
-        public ObjectFieldList(String objName, String objAPIName, list<FieldLabels> fLabels){
-            objectAPIName = objName;
-            objectName = objAPIName;
-            fieldLabels = fLabels;
-        }
-    }
-
-    public class FieldLabels{
-        @AuraEnabled
-        public String fieldLabel{get;set;}
-        @AuraEnabled
-        public String fieldAPI{get;set;}
-        public FieldLabels(String label, String api){
-            fieldLabel = label;
-            fieldAPI = api;
-        }
-    }
-/* -------------------------- Close : merge method ------------------------------ */
 }
