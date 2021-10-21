@@ -247,12 +247,12 @@ system.debug('***** search Term: ' + searchTerm + ' ==== selectedIds: ' + select
     @AuraEnabled
     public static void sendEmail(string userId, string relatedTo, string fromAddress, string fromName, string subject, string emailBody, list<string> toIds, list<string> toAddress, list<string> ccIds, list<string> ccAddress, string classification, string deliveryOption,Id attachmentID) {
         system.debug('attachmentID'+attachmentID);
-        emailBody = classification + '\n' + emailBody ;
-        emailBody = deliveryOption + '\n' + emailBody;
+        emailBody = classification + ' // ' + deliveryOption + '\n\n' + emailBody;
+       // emailBody = classification + '\n' + emailBody ;
+       //emailBody = deliveryOption + '\n' + emailBody;
         emailBody.replace('<p>', '');
         emailBody.replace('</p>', '');
-        
-            System.enqueueJob(new cemInsertEmailTemplateQueueable(userId, relatedTo, fromAddress, fromName, subject, emailBody, toIds, toAddress,  ccIds,  ccAddress,  classification,  deliveryOption,attachmentID));
+        System.enqueueJob(new cemInsertEmailTemplateQueueable(userId, relatedTo, fromAddress, fromName, subject, emailBody, toIds, toAddress,  ccIds,  ccAddress,  classification,  deliveryOption,attachmentID));
         
         /*try {
             
